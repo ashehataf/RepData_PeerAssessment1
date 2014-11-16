@@ -120,5 +120,5 @@ for(i in 1:nR){
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r}
 data <- data.frame(data, weekday=weekdays(data$date))
-print(data)
+#print(data)
 ```
