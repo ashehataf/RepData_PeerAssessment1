@@ -7,19 +7,118 @@ output:
 
 
 ## Loading and preprocessing the data
-
+```{r echo=TRUE}
+setwd("D:/DataScience/Coursera/1 - Data Science - Specialization/RWD")
+data <- read.csv(file = "repdata_data_activity/activity.csv")
+dataWithoutNAs <- data[!is.na(data$steps),]
+dateLevels <- levels(dataWithoutNAs$date)
+nR <- length(dateLevels)
+```
 
 
 ## What is mean total number of steps taken per day?
 
+```{r echo=TRUE}
+m<-tapply(dataWithoutNAs$steps, dataWithoutNAs$date, mean, simplify = FALSE)
+n<-tapply(dataWithoutNAs$steps, dataWithoutNAs$date, median, simplify = FALSE)
+s<-tapply(dataWithoutNAs$steps, dataWithoutNAs$date, sum, simplify = FALSE)
+df <- data.frame(date=names(m), mean=numeric(nR), median=numeric(nR), sum=numeric(nR), stringsAsFactors=FALSE)
+if(is.null(m[[1]])){
+  x <- c(NA)
+}else{
+  x <- m[[1]]
+}
+if(is.null(n[[1]])){
+  y <- c(NA)
+}else{
+  y <- n[[1]]
+}
+if(is.null(s[[1]])){
+  z <- c(NA)
+}else{
+  z <- s[[1]]
+}
 
+for(i in 2:nR){
+  if(is.null(m[[i]])){
+    x <- c(x,NA)
+  }else{
+    x <- c(x,m[[i]])
+  }
+  if(is.null(n[[i]])){
+    y <- c(y,NA)
+  }else{
+    y <- c(y,n[[i]])
+  }
+  if(is.null(s[[i]])){
+    z <- c(z,NA)
+  }else{
+    z <- c(z,s[[i]])
+  }
+}
+  df$date <- strptime(df$date,"%Y-%m-%d")
+  df$mean <- x
+  df$median <- y
+  df$sum <- z
+  print(df)
+  hist(df$sum, main="Histogram", xlab = "Total number of steps taken each day", col = "red")
+```
 
 ## What is the average daily activity pattern?
+```{r}
+  data$date <- strptime(data$date,"%Y-%m-%d")
+  data2 <- data[!is.na(data$steps),]
+  f <- tapply(data2$steps, data2$interval, mean, simplify = FALSE)
+  intervalLevels <- levels(as.factor(data2$interval))
+  nR <- length(intervalLevels)
+  df2 <- data.frame(interval=intervalLevels, mean=numeric(nR), stringsAsFactors=FALSE)
 
+  if(is.null(f[[1]])){
+    x <- c(NA)
+  }else{
+    x <- f[[1]]
+  }
+
+for(i in 2:nR){
+  if(is.null(f[[i]])){
+    x <- c(x,NA)
+  }else{
+    x <- c(x,f[[i]])
+  }
+}
+  df2$mean <- x
+  plot(df2$interval, df2$mean, type="l", xlab="Intervals", ylab="AVG")
+  print(df2[df2$mean == max(df2$mean), ]) 
+
+```
 
 
 ## Imputing missing values
+Records with NAs
+```{r}
+print(nrow(data) - nrow(data2))
+##filling NAs with mean values
+##check for NAs values in the original data.frame
+##For each NA value corresponding to an interval
+##Get the avg steps for that specific interval which we have already calculated before
+##Update NA with the AVG value
+nR <- nrow(data)
+for(i in 1:nR){
+  if(is.na(data$steps[i])){
+    nx <- nrow(df2)
+    for(j in 1:nx){
+      if(data$interval[i] == df2$interval[j]){
+        data$steps[i] <- df2$mean[j]
+      }
+    }
+  }
+}
 
+```
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+data <- data.frame(data, weekday=weekdays(data$date))
+print(data)
+```
